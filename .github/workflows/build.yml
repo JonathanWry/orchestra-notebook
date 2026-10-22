@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build macOS app
+        run: ./build.sh
+      - name: Upload macOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Orchestra-Notebook-macOS
+          path: dist/Orchestra-Notebook-macOS.zip
+
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build Windows app
+        shell: pwsh
+        run: .\build-windows.ps1
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Orchestra-Notebook-Windows-win-x64
+          path: dist/Orchestra-Notebook-Windows-win-x64.zip

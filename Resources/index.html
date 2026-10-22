@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>配器手记</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="app">
+    <aside class="rail">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <div><strong>配器手记</strong><small>Orchestration notebook</small></div>
+      </div>
+      <button class="primary full" id="captureSelectionButton"><span>✦</span> 从 MuseScore 选区新建</button>
+      <button class="ghost full" id="openButton"><span>＋</span> 添加乐谱 / 分区</button>
+      <button class="quiet full" id="scanLibraryButton">扫描乐谱文件夹</button>
+      <button class="quiet full" id="installPluginButton">设置 MuseScore 连接</button>
+      <button class="overview-item" id="allNotesButton">
+        <span class="overview-icon">⌘</span>
+        <span><strong>全部笔记</strong><small>跨乐谱总览</small></span>
+        <em id="allNoteCount">0</em>
+      </button>
+      <div class="rail-title"><span>乐谱库</span><span id="scoreCount">0</span></div>
+      <div class="score-list" id="scoreList"></div>
+      <div class="rail-tip">
+        <b>本地优先</b>
+        <span>乐谱、谱例和笔记都只保存在本机。也可直接拖入 .mscz。</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <section class="empty-state" id="emptyState">
+        <div class="empty-card">
+          <div class="empty-score" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><b>♪</b>
+          </div>
+          <p class="eyebrow">LISTEN · LOOK · LABEL</p>
+          <h1>把听见的配器，<br>钉回乐谱里。</h1>
+          <p>每条笔记都像普通页面一样自由书写；需要时插入某段乐谱的链接与谱例，并一键回到 MuseScore 的原位置。</p>
+          <div class="empty-actions">
+            <button class="primary" data-action="capture">从 MuseScore 选区新建</button>
+            <button class="ghost" data-action="open">选择 .mscz</button>
+          </div>
+          <div class="feature-row">
+            <span><b>01</b> 自由笔记</span>
+            <span><b>02</b> 可选粘贴谱例</span>
+            <span><b>03</b> 一键回到原谱</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="overview-page hidden" id="overviewPage">
+        <header class="overview-header">
+          <p class="eyebrow">NOTEBOOK INDEX</p>
+          <h1>全部笔记</h1>
+          <p>在一个地方浏览所有乐谱里的观察、pattern、华彩与动机。</p>
+          <div class="overview-summary" id="overviewSummary"></div>
+        </header>
+        <div class="overview-tools">
+          <label class="search-box">⌕ <input id="allNotesSearch" type="search" placeholder="搜索标题、正文或乐谱名"></label>
+          <div class="filter-stack">
+            <div class="filters" id="allNotesFilters"></div>
+            <div class="role-filters">
+              <label>Melody 包含<input id="overviewMelodyFilter" list="overviewMelodyOptions" placeholder="如 Flute, Oboe"></label>
+              <label>Chord 包含<input id="overviewChordFilter" list="overviewChordOptions" placeholder="如 Strings"></label>
+              <label>Bass 包含<input id="overviewBassFilter" list="overviewBassOptions" placeholder="如 Cello, Bass"></label>
+              <label>Percussion 包含<input id="overviewPercussionFilter" list="overviewPercussionOptions" placeholder="如 Timpani"></label>
+              <label>Cadenza 包含<input id="overviewCadenzaFilter" list="overviewCadenzaOptions" placeholder="如 Harp"></label>
+              <label>描述词（精确）<input id="overviewMoodFilter" list="overviewMoodOptions" placeholder="如 quiet, determined"></label>
+              <datalist id="overviewMelodyOptions"></datalist><datalist id="overviewChordOptions"></datalist><datalist id="overviewBassOptions"></datalist><datalist id="overviewPercussionOptions"></datalist><datalist id="overviewCadenzaOptions"></datalist><datalist id="overviewMoodOptions"></datalist>
+            </div>
+          </div>
+        </div>
+        <div class="note-grid overview-grid" id="allNotesGrid"></div>
+      </section>
+
+      <section class="score-page hidden" id="scorePage">
+        <header class="score-header">
+          <div class="cover" id="scoreCover"><span>𝄞</span></div>
+          <div class="score-heading">
+            <div class="eyebrow" id="scoreMeta">MUSESCORE SCORE</div>
+            <div class="score-title-row"><h1 id="scoreTitle">Untitled</h1><button class="rename-score" id="renameScoreButton" title="修改在配器手记中的显示名">重命名</button></div>
+            <p id="scoreSubtitle"></p>
+            <div class="score-stats" id="scoreStats"></div>
+          </div>
+          <div class="header-actions">
+            <button class="ghost" id="revealButton">在 Finder 中显示</button>
+            <button class="ghost" id="relocateScoreButton">重新定位乐谱…</button>
+            <button class="primary" id="newNoteButton">＋ 空白笔记</button>
+          </div>
+        </header>
+
+        <div class="section-tabs">
+          <button class="tab active" data-view="notes">笔记 <em id="noteCount">0</em></button>
+          <button class="tab" data-view="map">配器跑动</button>
+          <div class="tab-spacer"></div>
+          <label class="range-control">显示
+            <input id="rangeStart" type="number" min="1" value="1" aria-label="起始小节">
+            <span>—</span>
+            <input id="rangeEnd" type="number" min="1" value="32" aria-label="结束小节">
+          </label>
+        </div>
+
+        <section class="map-view hidden" id="mapView">
+          <div class="map-toolbar">
+            <div>
+              <h2>Orchestration map</h2>
+              <p>色块越实，音符活动越密；点小节可以快速建立一个带位置链接的笔记。</p>
+            </div>
+            <div class="legend"><span><i class="low"></i>疏</span><span><i class="mid"></i>中</span><span><i class="high"></i>密</span></div>
+          </div>
+          <div class="timeline-shell" id="timelineShell">
+            <div class="timeline" id="timeline"></div>
+          </div>
+        </section>
+
+        <section class="notes-view" id="notesView">
+          <div class="notes-toolbar">
+            <div>
+              <h2>Notes</h2>
+              <p>正文自由书写；一条笔记可以放多个乐谱位置和谱例。</p>
+            </div>
+            <div class="filter-stack">
+              <div class="filters" id="roleFilters"></div>
+              <div class="role-filters compact-role-filters">
+                <label>Melody 包含<input id="melodyFilter" list="melodyOptions" placeholder="Flute, Oboe"></label>
+                <label>Chord 包含<input id="chordFilter" list="chordOptions" placeholder="Strings"></label>
+                <label>Bass 包含<input id="bassFilter" list="bassOptions" placeholder="Cello, Bass"></label>
+                <label>Percussion 包含<input id="percussionFilter" list="percussionOptions" placeholder="Timpani"></label>
+                <label>Cadenza 包含<input id="cadenzaFilter" list="cadenzaOptions" placeholder="Harp"></label>
+                <label>描述词（精确）<input id="moodFilter" list="moodOptions" placeholder="quiet, determined"></label>
+                <datalist id="melodyOptions"></datalist><datalist id="chordOptions"></datalist><datalist id="bassOptions"></datalist><datalist id="percussionOptions"></datalist><datalist id="cadenzaOptions"></datalist><datalist id="moodOptions"></datalist>
+              </div>
+            </div>
+          </div>
+          <div class="note-grid" id="noteGrid"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="busy hidden" id="busy"><div class="spinner"></div><span id="busyMessage">正在解析…</span></div>
+  <div class="toast" id="toast"></div>
+
+  <dialog id="noteDialog">
+    <form method="dialog" id="noteForm">
+      <div class="dialog-head">
+        <div><p class="eyebrow">SCORE NOTE</p><h2 id="dialogTitle">新建笔记</h2></div>
+        <button class="icon-button dialog-cancel" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="note-document">
+        <input class="note-title-input" id="noteTitle" required placeholder="无标题">
+        <div class="note-type-row">
+          <span>笔记类型</span>
+          <label><input type="radio" name="noteType" value="free" checked><b>普通笔记</b></label>
+          <label><input type="radio" name="noteType" value="analysis"><b>总谱分析</b></label>
+        </div>
+        <div class="template-row" id="templateRow">
+          <span>从模板开始</span>
+          <button type="button" data-template="orchestration">总谱分析</button>
+          <button type="button" data-template="pattern">Pattern / 华彩</button>
+          <button type="button" data-template="motif">Motif</button>
+          <button type="button" data-template="blank">空白</button>
+        </div>
+        <section class="notion-property mood-property">
+          <div class="property-name"><strong>Description / Mood</strong><small>描述这一段的性格；按现有词精确筛选</small></div>
+          <textarea id="moodText" rows="1" placeholder="例如：quiet, determined, mysterious"></textarea>
+          <div class="generated-tags" id="moodGeneratedTags"></div>
+        </section>
+        <section class="analysis-fields hidden" id="analysisFields">
+          <div class="analysis-heading"><div><b>总谱分析构成 · 5 parts</b><span>Melody、Chord、Bass、Percussion、Cadenza。像 Notion 属性一样填写；编号保留显示，但生成筛选标签时忽略。</span></div></div>
+          <div class="notion-property" data-role="melody">
+            <div class="property-name"><strong>Melody part</strong><small>旋律构成</small></div>
+            <textarea id="melodyText" rows="2" placeholder="例如：Flute 1 + Flute 2 + Oboe 1"></textarea>
+            <div class="generated-tags" id="melodyGeneratedTags"></div>
+          </div>
+          <div class="notion-property" data-role="chord">
+            <div class="property-name"><strong>Chord</strong><small>和弦构成</small></div>
+            <textarea id="chordText" rows="2" placeholder="例如：Horn 1–4 + Violin 1 + Viola"></textarea>
+            <div class="generated-tags" id="chordGeneratedTags"></div>
+          </div>
+          <div class="notion-property" data-role="bass">
+            <div class="property-name"><strong>Bass</strong><small>低音构成</small></div>
+            <textarea id="bassText" rows="2" placeholder="例如：Cello + Contrabass + Tuba"></textarea>
+            <div class="generated-tags" id="bassGeneratedTags"></div>
+          </div>
+          <div class="notion-property" data-role="percussion">
+            <div class="property-name"><strong>Percussion</strong><small>打击乐构成</small></div>
+            <textarea id="percussionText" rows="2" placeholder="例如：Timpani + Cymbals + Snare Drum"></textarea>
+            <div class="generated-tags" id="percussionGeneratedTags"></div>
+          </div>
+        </section>
+        <section class="cadenza-field" id="cadenzaField">
+          <label class="cadenza-toggle"><input id="includeCadenza" type="checkbox"><span><strong id="cadenzaToggleTitle">加入 Cadenza / Pattern（华彩）</strong><small id="cadenzaToggleHint">可直接填写乐器构成，并自动生成筛选标签。</small></span></label>
+          <div class="notion-property cadenza-property hidden" id="cadenzaEditor" data-role="cadenza">
+            <div class="property-name"><strong>Cadenza / Pattern</strong><small>华彩构成</small></div>
+            <textarea id="cadenzaText" rows="2" placeholder="例如：Harp + Flute 1"></textarea>
+            <div class="generated-tags" id="cadenzaGeneratedTags"></div>
+            <div class="cadenza-details">
+              <textarea id="cadenzaDescription" rows="2" placeholder="简述华彩 / pattern 的形态、音域或用途（可选）"></textarea>
+              <div class="cadenza-preview" id="cadenzaPreview"></div>
+              <div class="cadenza-actions"><button type="button" id="pasteCadenzaImage">＋ 粘贴华彩图片</button><button type="button" id="uploadCadenzaImage">＋ 上传华彩图片</button><button type="button" class="danger-link hidden" id="removeCadenzaImage">清空全部图片</button></div>
+            </div>
+          </div>
+        </section>
+        <div class="score-links-editor" id="scoreLinksEditor"></div>
+        <div class="manual-link-row">
+          <span>插入当前乐谱位置</span>
+          <label>m.<input id="linkStart" type="number" min="1"></label>
+          <span>—</span>
+          <input id="linkEnd" type="number" min="1" aria-label="结束小节">
+          <button type="button" class="ghost" id="addScoreLink">＋ 位置链接</button>
+        </div>
+        <div class="other-notes-label"><strong>Other notes</strong><span>自由记录听感、配器想法、问题或任何补充。</span></div>
+        <div class="editor-toolbar" aria-label="正文格式">
+          <button type="button" data-command="bold"><b>B</b></button>
+          <button type="button" data-command="italic"><i>I</i></button>
+          <button type="button" data-command="formatBlock" data-value="h2">H2</button>
+          <button type="button" data-command="insertUnorderedList">• 列表</button>
+          <button type="button" data-command="formatBlock" data-value="blockquote">引用</button>
+          <span></span>
+          <button type="button" id="pasteImage">粘贴谱例</button>
+          <button type="button" id="uploadImage">上传图片</button>
+        </div>
+        <div id="noteEditor" class="rich-editor" contenteditable="true" data-placeholder="像 Notion 一样直接写。可记录听感、配器、motif、和声、问题……"></div>
+      </div>
+      <div class="dialog-actions">
+        <button class="danger hidden" type="button" id="deleteNote">删除</button>
+        <div class="export-actions">
+          <button class="ghost" type="button" id="exportMarkdown">导出 .md</button>
+          <button class="ghost" type="button" id="exportPDF">导出 PDF</button>
+        </div>
+        <div></div>
+        <button class="ghost dialog-cancel" type="button">取消</button>
+        <button class="primary" type="submit">保存笔记</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="compact-dialog" id="renameScoreDialog">
+    <form method="dialog" id="renameScoreForm">
+      <div class="dialog-head"><div><p class="eyebrow">LOCAL DISPLAY NAME</p><h2>修改乐谱名称</h2></div><button class="icon-button dialog-cancel" type="button" aria-label="关闭">×</button></div>
+      <p class="dialog-hint">只修改配器手记里的显示名，不会重命名原始 .mscz 文件。</p>
+      <input class="dialog-input" id="scoreNameInput" required placeholder="乐谱名称">
+      <div class="compact-actions"><button class="ghost dialog-cancel" type="button">取消</button><button class="primary" type="submit">保存名称</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="compact-dialog" id="deleteConfirmDialog">
+    <form method="dialog" id="deleteConfirmForm">
+      <div class="dialog-head"><div><p class="eyebrow">DELETE NOTE</p><h2>删除这条笔记？</h2></div><button class="icon-button dialog-cancel" type="button" aria-label="关闭">×</button></div>
+      <p class="dialog-hint">删除后无法撤销；原始 MuseScore 乐谱不会受到影响。</p>
+      <div class="compact-actions"><button class="ghost dialog-cancel" type="button">取消</button><button class="danger" type="submit">删除笔记</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="compact-dialog" id="deleteScoreConfirmDialog">
+    <form method="dialog" id="deleteScoreConfirmForm">
+      <div class="dialog-head"><div><p class="eyebrow">REMOVE SCORE SECTION</p><h2>移除这个乐谱分区？</h2></div><button class="icon-button dialog-cancel" type="button" aria-label="关闭">×</button></div>
+      <p class="dialog-hint" id="deleteScoreHint">该分区中的本地笔记会一起从配器手记中删除；原始 MuseScore 文件不会受到影响。</p>
+      <div class="compact-actions"><button class="ghost dialog-cancel" type="button">取消</button><button class="danger" type="submit">移除分区和笔记</button></div>
+    </form>
+  </dialog>
+
+  <canvas id="exportCanvas" width="1400" height="900" hidden></canvas>
+  <script src="app.js"></script>
+</body>
+</html>
