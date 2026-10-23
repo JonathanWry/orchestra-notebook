@@ -6,6 +6,14 @@
 
 > 当前版本：v0.8。macOS 版已实际使用与验证；Windows 版复用相同界面和资料库格式，已通过跨平台编译检查，并由 GitHub Actions 在 Windows runner 生成安装包。
 
+## 直接下载
+
+- [下载 macOS 版（最新版）](https://github.com/JonathanWry/orchestra-notebook/releases/latest/download/Orchestra-Notebook-macOS.zip)
+- [下载 Windows x64 版（最新版）](https://github.com/JonathanWry/orchestra-notebook/releases/latest/download/Orchestra-Notebook-Windows-win-x64.zip)
+- [查看全部版本与更新说明](https://github.com/JonathanWry/orchestra-notebook/releases)
+
+下载后不需要克隆仓库或自己编译。Windows 压缩包必须完整解压后再运行；macOS 解压后把 App 拖入“应用程序”。
+
 ## 功能
 
 - 像普通页面一样编辑标题、段落、二级标题、粗体、斜体、列表、引用和图片。
@@ -33,7 +41,7 @@ macOS 与 Windows 使用同一种 JSON 数据格式。由于笔记中的乐谱�
 
 ### macOS
 
-1. 在 GitHub Actions 的最新成功构建中下载 `Orchestra-Notebook-macOS`，或在 macOS 上运行 `./build.sh`。
+1. 从上方“直接下载”取得最新版，或在 macOS 上运行 `./build.sh`。
 2. 解压后把“配器手记.app”拖入“应用程序”。
 3. 第一次打开后点击“设置 MuseScore 连接”。
 
@@ -41,7 +49,7 @@ macOS 与 Windows 使用同一种 JSON 数据格式。由于笔记中的乐谱�
 
 ### Windows
 
-1. 在 GitHub Actions 的最新成功构建中下载 `Orchestra-Notebook-Windows-win-x64`。
+1. 从上方“直接下载”取得 Windows x64 最新版。
 2. 解压到一个固定文件夹，运行 `OrchestraNotebook.exe`；无需安装 .NET Runtime。
 3. Windows 10/11 通常已包含 Microsoft Edge WebView2 Runtime；如系统提示缺少，请安装微软官方 WebView2 Runtime。
 4. 在 App 中点击“设置 MuseScore 连接”，重启 MuseScore Studio 后启用插件。
