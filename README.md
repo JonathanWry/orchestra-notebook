@@ -14,6 +14,16 @@
 
 下载后不需要克隆仓库或自己编译。Windows 压缩包必须完整解压后再运行；macOS 解压后把 App 拖入“应用程序”。
 
+## 界面预览
+
+![跨乐谱的全部笔记总览](docs/assets/overview.jpg)
+
+| 32 小节配器跑动 | Notion 式总谱分析编辑器 |
+| --- | --- |
+| ![配器跑动视图](docs/assets/orchestration-map.jpg) | ![笔记编辑器](docs/assets/note-editor.jpg) |
+
+截图使用内置匿名演示资料，不包含真实乐谱路径或个人笔记。演示数据生成器位于 [`docs/demo-data.js`](docs/demo-data.js)，界面更新后可以重复生成截图。
+
 ## 功能
 
 - 像普通页面一样编辑标题、段落、二级标题、粗体、斜体、列表、引用和图片。
