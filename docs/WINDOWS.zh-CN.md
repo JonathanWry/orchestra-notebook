@@ -78,6 +78,7 @@ Windows 宿主的主要文件：
 ### MuseScore 插件运行后没有出现笔记
 
 - 确认乐谱已经保存到磁盘。
+- 保存后重新运行插件；`selection.json` 中应包含非空的 `scorePath`。
 - 检查插件是否已启用。
 - 检查 `selection.json` 是否在上面的目录中更新。
 - 如果“文档”目录被 OneDrive 重定向，请确认 MuseScore 的 `homePath()/Documents` 与 `%USERPROFILE%\Documents` 是否仍指向同一位置；若不同，请提交 issue 并附上脱敏后的两个路径。
