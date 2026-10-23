@@ -258,7 +258,7 @@ internal sealed class MainForm : Form
             var timestamp = selection.TryGetProperty("timestamp", out var time) ? time.GetDouble() : 0;
             if (timestamp <= _lastSelectionTimestamp || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timestamp > 30_000) return;
             _lastSelectionTimestamp = timestamp;
-            var scorePath = selection.TryGetProperty("scorePath", out var path) ? path.GetString() : null;
+            var scorePath = ResolveMuseScorePath(selection);
             if (string.IsNullOrWhiteSpace(scorePath) || !File.Exists(scorePath))
             {
                 MessageBox.Show(this, "请先保存当前 MuseScore 乐谱，再重新运行插件。", "无法接收选区", MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
@@ -266,11 +266,38 @@ internal sealed class MainForm : Form
             await SetBusyAsync(true, "正在读取选区位置…");
             var score = await Task.Run(() => ScoreParser.Parse(scorePath));
             await CallJavaScriptAsync("receiveScore", score);
-            await CallJavaScriptRawAsync("receiveMuseScoreSelection", selection.GetRawText());
+            var resolvedSelection = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(selection.GetRawText())
+                ?? new Dictionary<string, JsonElement>();
+            resolvedSelection["scorePath"] = JsonSerializer.SerializeToElement(scorePath);
+            await CallJavaScriptRawAsync("receiveMuseScoreSelection", JsonSerializer.Serialize(resolvedSelection, _jsonOptions));
             Show(); WindowState = FormWindowState.Normal; Activate(); BringToFront();
         }
         catch (Exception error) { MessageBox.Show(this, error.Message, "无法读取 MuseScore 选区", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
         finally { if (_pageReady) await SetBusyAsync(false); }
+    }
+
+    // MuseScore 4 no longer exposes the active score's path to QML plugins.
+    // Its session file is the supported local record of open score documents.
+    private static string? ResolveMuseScorePath(JsonElement selection)
+    {
+        if (selection.TryGetProperty("scorePath", out var supplied) && supplied.GetString() is { Length: > 0 } suppliedPath && File.Exists(suppliedPath))
+            return suppliedPath;
+
+        var sessionPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "MuseScore", "MuseScore4", "session", "session.json");
+        try
+        {
+            var paths = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(sessionPath, Encoding.UTF8)) ?? [];
+            var title = selection.TryGetProperty("scoreTitle", out var titleElement) ? titleElement.GetString() : null;
+            var existing = paths.Where(File.Exists).ToList();
+            var matchingTitle = existing.LastOrDefault(path =>
+                !string.IsNullOrWhiteSpace(title) &&
+                string.Equals(Path.GetFileNameWithoutExtension(path), title, StringComparison.OrdinalIgnoreCase));
+            return matchingTitle ?? existing.LastOrDefault();
+        }
+        catch (IOException) { return null; }
+        catch (JsonException) { return null; }
     }
 
     private Task PasteImageAsync()

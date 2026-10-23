@@ -61,9 +61,8 @@ MuseScore {
         var endMeasure = measureNumberForTick(Math.max(startTick, endTick - 1))
         var payload = {
             version: 1,
-            // MuseScore 4 exposes the on-disk score location as `path`.
-            // `filePath` is undefined there and JSON.stringify omits it,
-            // making a saved score look unsaved to the desktop app.
+            // MuseScore 4 may omit this property. Native hosts resolve the
+            // active saved score from MuseScore's local session record.
             scorePath: curScore.path,
             scoreTitle: curScore.scoreName,
             startTick: startTick,
