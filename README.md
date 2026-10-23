@@ -2,9 +2,9 @@
 
 一个面向配器学习的本地优先笔记 App。它把 Notion 式自由笔记、MuseScore 乐谱位置和配器分析模板放在同一个界面里。
 
-你可以对一整段总谱建立笔记，记录 Melody、Chord、Bass、Percussion、Cadenza / Pattern，加入多个位置链接与谱例图片，再从笔记一键回到 MuseScore 的原小节。
+你可以对一整段总谱建立笔记，记录 Melody、Chord、Bass、Percussion、华彩 / Texture，加入多个位置链接与谱例图片，再从笔记一键回到 MuseScore 的原小节。
 
-> 当前版本：v0.8。macOS 版已实际使用与验证；Windows 版复用相同界面和资料库格式，已通过跨平台编译检查，并由 GitHub Actions 在 Windows runner 生成安装包。
+> 当前版本：v0.8.1。macOS 版已实际使用与验证；Windows 版复用相同界面和资料库格式，已通过 GitHub Windows runner 编译、打包与文件检查，尚待更多 Windows 实机联动反馈。
 
 ## 直接下载
 
@@ -18,10 +18,10 @@
 
 - 像普通页面一样编辑标题、段落、二级标题、粗体、斜体、列表、引用和图片。
 - 单条笔记可以保存多个乐谱位置，不要求为每件乐器分别记笔记。
-- 总谱分析包含 Melody、Chord、Bass、Percussion、Cadenza / Pattern 五部分。
+- 总谱分析包含 Melody、Chord、Bass、Percussion、华彩 / Texture 五部分。
 - 分别按五类配器角色中的乐器筛选；`Flute 1`、`Flute 2` 会保留原文，但筛选时归一为 `Flute`。
 - Description / Mood 使用已有词精确搜索，例如 `quiet`、`determined`。
-- 华彩可选择参与乐器，并加入多张谱例图片。
+- 华彩 / Texture 可选择参与乐器，并加入多张谱例图片。
 - “全部笔记”跨乐谱浏览与搜索，也可按乐谱文件名找到笔记。
 - 乐谱移动后可手动重新定位，或扫描整个文件夹按唯一文件名自动修复。
 - 导出当前笔记为自包含 Markdown 或 A4 PDF，保留字段、正文、链接与谱例。
@@ -73,9 +73,9 @@ Windows 的详细说明见 [docs/WINDOWS.zh-CN.md](docs/WINDOWS.zh-CN.md)。
 
 不要使用 `⌘N` 或 `Ctrl+N`，它们通常属于 MuseScore 的“新建乐谱”。
 
-### 加入华彩或谱例
+### 加入华彩 / Texture 或谱例
 
-打开笔记后勾选“加入 Cadenza / Pattern”，填写乐器组成；可以连续粘贴或上传多张图片。普通正文中的“粘贴谱例”和“上传图片”则把图片插在正文光标处。
+打开笔记后勾选“加入华彩 / Texture”，填写参与乐器；可以连续粘贴或上传多张图片。这里既可记录独奏式华彩、装饰性跑动，也可记录持续音型、背景运动或织体层。普通正文中的“粘贴谱例”和“上传图片”则把图片插在正文光标处。
 
 ### 回到原谱
 

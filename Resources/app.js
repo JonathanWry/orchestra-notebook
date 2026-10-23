@@ -2,9 +2,10 @@ const GROUP_COLORS = {
   "木管": "#3d7c85", "铜管": "#c47b32", "打击乐": "#a95545", "弦乐": "#735f91",
   "键盘 / 竖琴": "#9a7e3e", "人声": "#a75270", "其他": "#57756b"
 };
+const ROLE_LABELS = { melody: "Melody", chord: "Chord", bass: "Bass", percussion: "Percussion", cadenza: "华彩 / Texture" };
 const TEMPLATES = {
   orchestration: "",
-  pattern: `<h2>Pattern / 华彩</h2><p><strong>形态：</strong></p><p><strong>音域与织体：</strong></p><p><strong>和声功能：</strong></p><p><strong>可以怎样移植：</strong></p>`,
+  pattern: `<h2>华彩 / Texture</h2><p><strong>形态：</strong></p><p><strong>音域与织体：</strong></p><p><strong>和声功能：</strong></p><p><strong>可以怎样移植：</strong></p>`,
   motif: `<h2>Motif</h2><p><strong>动机轮廓：</strong></p><p><strong>第一次出现：</strong></p><p><strong>后续变形：</strong></p><p><strong>配器如何改变它的意义：</strong></p>`,
   blank: ""
 };
@@ -475,7 +476,7 @@ function analysisBadges(note) {
   const badges = [];
   if (note.kind === "analysis") badges.push("总谱分析");
   for (const role of ["melody", "chord", "bass", "percussion", "cadenza"]) {
-    for (const name of [...new Set(roleInstruments(note, role).map(instrumentBase))]) badges.push(`${role[0].toUpperCase() + role.slice(1)} · ${name}`);
+    for (const name of [...new Set(roleInstruments(note, role).map(instrumentBase))]) badges.push(`${ROLE_LABELS[role]} · ${name}`);
   }
   return badges.map(label => `<span class="analysis-badge">${escapeHTML(label)}</span>`).join("");
 }
@@ -487,7 +488,7 @@ function analysisPreview(note) {
   if (note.kind === "analysis" && analysis.chordText) rows.push(["Chord", analysis.chordText]);
   if (note.kind === "analysis" && analysis.bassText) rows.push(["Bass", analysis.bassText]);
   if (note.kind === "analysis" && analysis.percussionText) rows.push(["Percussion", analysis.percussionText]);
-  if (analysis.cadenza?.enabled && analysis.cadenza.text) rows.push(["Cadenza", analysis.cadenza.text]);
+  if (analysis.cadenza?.enabled && analysis.cadenza.text) rows.push(["华彩 / Texture", analysis.cadenza.text]);
   return rows.length ? `<div class="analysis-preview">${rows.map(([label, value]) => `<div><b>${label}</b><span>${escapeHTML(value)}</span></div>`).join("")}</div>` : "";
 }
 
@@ -674,18 +675,18 @@ function renderAnalysisEditor() {
   if (isAnalysis) {
     analysisFields.append(cadenzaField);
     cadenzaField.classList.add("analysis-part");
-    $("#cadenzaToggleTitle").textContent = "Cadenza / Pattern（第 5 部分）";
-    $("#cadenzaToggleHint").textContent = "没有华彩时可以不勾选；勾选后填写参与乐器并生成筛选标签。";
+    $("#cadenzaToggleTitle").textContent = "华彩 / Texture（第 5 部分）";
+    $("#cadenzaToggleHint").textContent = "没有华彩或独立织体时可以不勾选；勾选后填写参与乐器并生成筛选标签。";
   } else {
     $("#scoreLinksEditor").before(cadenzaField);
     cadenzaField.classList.remove("analysis-part");
-    $("#cadenzaToggleTitle").textContent = "加入 Cadenza / Pattern（华彩）";
-    $("#cadenzaToggleHint").textContent = "可直接填写乐器构成，并自动生成筛选标签。";
+    $("#cadenzaToggleTitle").textContent = "加入华彩 / Texture";
+    $("#cadenzaToggleHint").textContent = "可直接填写参与乐器，并自动生成筛选标签。";
   }
   $("#includeCadenza").checked = !!editingAnalysis.cadenza.enabled;
   $("#cadenzaEditor").classList.toggle("hidden", !editingAnalysis.cadenza.enabled);
   const snippets = editingAnalysis.cadenza.snippets || [];
-  $("#cadenzaPreview").innerHTML = snippets.length ? snippets.map((src, index) => `<figure><img src="${src}" alt="华彩摘录谱例 ${index + 1}"><button type="button" data-remove-cadenza-image="${index}" aria-label="移除第 ${index + 1} 张华彩图片">×</button><figcaption>华彩图片 ${index + 1}</figcaption></figure>`).join("") : `<span>尚未加入华彩图片；可以连续粘贴或上传多张。</span>`;
+  $("#cadenzaPreview").innerHTML = snippets.length ? snippets.map((src, index) => `<figure><img src="${src}" alt="华彩 / Texture 谱例 ${index + 1}"><button type="button" data-remove-cadenza-image="${index}" aria-label="移除第 ${index + 1} 张谱例图片">×</button><figcaption>谱例图片 ${index + 1}</figcaption></figure>`).join("") : `<span>尚未加入华彩 / Texture 谱例；可以连续粘贴或上传多张。</span>`;
   $("#removeCadenzaImage").classList.toggle("hidden", !snippets.length);
   $$('[data-remove-cadenza-image]').forEach(button => button.addEventListener("click", () => {
     editingAnalysis.cadenza.snippets.splice(Number(button.dataset.removeCadenzaImage), 1);
@@ -755,7 +756,7 @@ function currentNoteExportPayload(format) {
     ["Chord", editingAnalysis.chordText],
     ["Bass", editingAnalysis.bassText],
     ["Percussion", editingAnalysis.percussionText],
-    ["Cadenza / Pattern", editingAnalysis.cadenza.enabled ? editingAnalysis.cadenza.text : ""]
+    ["华彩 / Texture", editingAnalysis.cadenza.enabled ? editingAnalysis.cadenza.text : ""]
   ].filter(([, value]) => value);
   const links = editingLinks.map(link => ({
     scoreTitle: link.scoreTitle || score?.title || "乐谱",
@@ -774,7 +775,7 @@ function currentNoteExportPayload(format) {
     fields.length ? "## 总谱分析构成" : "",
     ...fields.map(([label, value]) => `- **${label}：** ${value}`),
     fields.length ? "" : "",
-    editingAnalysis.cadenza.enabled && editingAnalysis.cadenza.description ? `**华彩说明：** ${editingAnalysis.cadenza.description}\n` : "",
+    editingAnalysis.cadenza.enabled && editingAnalysis.cadenza.description ? `**华彩 / Texture 说明：** ${editingAnalysis.cadenza.description}\n` : "",
     links.length ? "## 乐谱位置" : "",
     ...links.flatMap(link => {
       const range = link.end > link.start ? `${link.start}-${link.end}` : `${link.start}`;
@@ -786,14 +787,14 @@ function currentNoteExportPayload(format) {
     "",
     contentMarkdown || "（空白）",
     "",
-    ...(editingAnalysis.cadenza.enabled ? (editingAnalysis.cadenza.snippets || []).map((src, index) => `![华彩谱例 ${index + 1}](${src})\n`) : [])
+    ...(editingAnalysis.cadenza.enabled ? (editingAnalysis.cadenza.snippets || []).map((src, index) => `![华彩 / Texture 谱例 ${index + 1}](${src})\n`) : [])
   ].filter((line, index, array) => line !== "" || array[index - 1] !== "").join("\n").trim() + "\n";
-  const analysisHTML = fields.length ? `<section><h2>总谱分析构成</h2><dl>${fields.map(([label, value]) => `<div><dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd></div>`).join("")}</dl>${editingAnalysis.cadenza.enabled && editingAnalysis.cadenza.description ? `<p class="cadenza-description"><b>华彩说明</b><br>${escapeHTML(editingAnalysis.cadenza.description)}</p>` : ""}</section>` : "";
+  const analysisHTML = fields.length ? `<section><h2>总谱分析构成</h2><dl>${fields.map(([label, value]) => `<div><dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd></div>`).join("")}</dl>${editingAnalysis.cadenza.enabled && editingAnalysis.cadenza.description ? `<p class="cadenza-description"><b>华彩 / Texture 说明</b><br>${escapeHTML(editingAnalysis.cadenza.description)}</p>` : ""}</section>` : "";
   const linksHTML = links.length ? `<section><h2>乐谱位置</h2>${links.map(link => {
     const range = link.end > link.start ? `${link.start}-${link.end}` : `${link.start}`;
     return `<div class="score-position"><b>${escapeHTML(link.scoreTitle)} · m.${range}</b><code>${escapeHTML(link.path)}</code>${link.snippet ? `<img src="${link.snippet}" alt="位置谱例">` : ""}</div>`;
   }).join("")}</section>` : "";
-  const cadenzaHTML = editingAnalysis.cadenza.enabled && editingAnalysis.cadenza.snippets?.length ? `<section><h2>华彩谱例</h2><div class="snippets">${editingAnalysis.cadenza.snippets.map((src, index) => `<figure><img src="${src}" alt="华彩谱例 ${index + 1}"><figcaption>华彩谱例 ${index + 1}</figcaption></figure>`).join("")}</div></section>` : "";
+  const cadenzaHTML = editingAnalysis.cadenza.enabled && editingAnalysis.cadenza.snippets?.length ? `<section><h2>华彩 / Texture 谱例</h2><div class="snippets">${editingAnalysis.cadenza.snippets.map((src, index) => `<figure><img src="${src}" alt="华彩 / Texture 谱例 ${index + 1}"><figcaption>华彩 / Texture 谱例 ${index + 1}</figcaption></figure>`).join("")}</div></section>` : "";
   const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
     @page { size: A4; margin: 18mm 17mm 20mm; }
     * { box-sizing:border-box; } body { margin:0; color:#1c302d; font:11pt/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif; }
@@ -884,7 +885,7 @@ function receiveImageForPendingTarget(dataURL, alt) {
     editingAnalysis.cadenza.snippets = Array.isArray(editingAnalysis.cadenza.snippets) ? editingAnalysis.cadenza.snippets : [];
     editingAnalysis.cadenza.snippets.push(dataURL);
     renderAnalysisEditor();
-    showToast(`已加入第 ${editingAnalysis.cadenza.snippets.length} 张华彩图片`);
+    showToast(`已加入第 ${editingAnalysis.cadenza.snippets.length} 张华彩 / Texture 谱例`);
   } else insertImage(dataURL, alt);
   pendingImageTarget = "editor";
 }
