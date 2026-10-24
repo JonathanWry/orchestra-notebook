@@ -11,7 +11,7 @@ GitHub Actions 提供的 `win-x64` 包包含 .NET 运行时，不需要另外安
 ## 第一次运行
 
 1. 解压整个 ZIP，不要只把 `OrchestraNotebook.exe` 单独拖出来。
-2. 运行 `OrchestraNotebook.exe`。
+2. 运行 `OrchestraNotebook.exe`。首次运行会在当前用户的开始菜单创建“配器手记”快捷方式；之后可通过 Windows 搜索启动。
 3. 点击“设置 MuseScore 连接”。插件会复制到：
 
    ```text

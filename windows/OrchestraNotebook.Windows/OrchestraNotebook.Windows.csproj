@@ -8,7 +8,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>OrchestraNotebook</AssemblyName>
     <RootNamespace>OrchestraNotebook.WindowsHost</RootNamespace>
-    <Version>0.8.1</Version>
+    <Version>0.8.2</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 

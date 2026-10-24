@@ -45,6 +45,7 @@ internal sealed class MainForm : Form
         try
         {
             Directory.CreateDirectory(_dataDirectory);
+            EnsureStartMenuShortcut();
             await _webView.EnsureCoreWebView2Async();
             _webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
             _webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
@@ -64,6 +65,33 @@ internal sealed class MainForm : Form
         catch (Exception error)
         {
             MessageBox.Show(this, $"无法启动界面：\n{error.Message}\n\n请确认 Microsoft Edge WebView2 Runtime 已安装。", "配器手记", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    // This is a portable ZIP distribution, so register a per-user Start menu
+    // shortcut on launch rather than requiring an installer or administrator rights.
+    private static void EnsureStartMenuShortcut()
+    {
+        try
+        {
+            var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs", "配器手记");
+            Directory.CreateDirectory(programs);
+            var shortcutPath = Path.Combine(programs, "配器手记.lnk");
+            var shellType = Type.GetTypeFromProgID("WScript.Shell");
+            if (shellType is null) return;
+            dynamic shell = Activator.CreateInstance(shellType)!;
+            dynamic shortcut = shell.CreateShortcut(shortcutPath);
+            shortcut.TargetPath = Application.ExecutablePath;
+            shortcut.WorkingDirectory = AppContext.BaseDirectory;
+            shortcut.IconLocation = $"{Application.ExecutablePath},0";
+            shortcut.Description = "配器手记 Orchestra Notebook";
+            shortcut.Save();
+            if (Marshal.IsComObject(shortcut)) Marshal.FinalReleaseComObject(shortcut);
+            if (Marshal.IsComObject(shell)) Marshal.FinalReleaseComObject(shell);
+        }
+        catch
+        {
+            // A shortcut failure must never prevent the portable app from opening.
         }
     }
 

@@ -4,7 +4,7 @@
 
 你可以对一整段总谱建立笔记，记录 Melody、Chord、Bass、Percussion、华彩 / Texture，加入多个位置链接与谱例图片，再从笔记一键回到 MuseScore 的原小节。
 
-> 当前版本：v0.8.1。macOS 版已实际使用与验证；Windows 版复用相同界面和资料库格式，已通过 GitHub Windows runner 编译、打包与文件检查，尚待更多 Windows 实机联动反馈。
+> 当前版本：v0.8.2。macOS 版已实际使用与验证；Windows 版复用相同界面和资料库格式，已通过 Windows 11 实机启动、MuseScore 4 选区联动、开始菜单搜索与 self-contained 打包验证。
 
 ## 直接下载
 
@@ -59,7 +59,7 @@ macOS 与 Windows 使用同一种 JSON 数据格式。由于笔记中的乐谱�
 ### Windows
 
 1. 从上方“直接下载”取得 Windows x64 最新版。
-2. 解压到一个固定文件夹，运行 `OrchestraNotebook.exe`；无需安装 .NET Runtime。
+2. 解压到一个固定文件夹，运行 `OrchestraNotebook.exe`；无需安装 .NET Runtime。首次运行会自动创建“配器手记”开始菜单快捷方式，之后按 Windows 键搜索“配器手记”或 `Orchestra Notebook` 即可启动。
 3. Windows 10/11 通常已包含 Microsoft Edge WebView2 Runtime；如系统提示缺少，请安装微软官方 WebView2 Runtime。
 4. 在 App 中点击“设置 MuseScore 连接”，重启 MuseScore Studio 后启用插件。
 
